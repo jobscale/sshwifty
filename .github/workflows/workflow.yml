@@ -2,7 +2,7 @@ name: Sshwifty-CI
 
 on:
   push:
-    branches: [master, dev]
+    branches: [main, dev]
     tags: ["**-release"]
   pull_request:
 
