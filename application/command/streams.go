@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -28,16 +28,16 @@ import (
 // Errors
 var (
 	ErrStreamsInvalidStreamID = errors.New(
-		"Stream ID is invalid")
+		"stream ID is invalid")
 
 	ErrStreamsStreamOperateInactiveStream = errors.New(
-		"Specified stream was inactive for operation")
+		"specified stream was inactive for operation")
 
 	ErrStreamsStreamClosingInactiveStream = errors.New(
-		"Closing an inactive stream is not allowed")
+		"closing an inactive stream is not allowed")
 
 	ErrStreamsStreamReleasingInactiveStream = errors.New(
-		"Releasing an inactive stream is not allowed")
+		"releasing an inactive stream is not allowed")
 )
 
 // StreamError Stream Error signal
@@ -243,7 +243,9 @@ func (w StreamResponder) Send(marker byte, data []byte, buf []byte) error {
 // SendManual sends the data without automatical segmentation. It will construct
 // the data package directly using the given `data` buffer, that is, the first
 // n bytes of the given `data` will be used to setup headers. It is the caller's
-//  responsibility to leave n bytes of space so no meaningful data will be over
+//
+//	responsibility to leave n bytes of space so no meaningful data will be over
+//
 // written. The number n can be acquired by calling .HeaderSize() method.
 func (w StreamResponder) SendManual(marker byte, data []byte) error {
 	dataLen := len(data)

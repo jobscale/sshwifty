@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,7 @@
   <div class="screen-console">
     <div
       class="console-console"
-      :style="'font-family: ' + typeface + ', inherit'"
+      :style="'font-family: ' + typefaces + ', inherit'"
     >
       <h2 style="display: none">Console</h2>
 
@@ -109,6 +109,7 @@
 import FontFaceObserver from "fontfaceobserver";
 import { Terminal } from "xterm";
 import { WebLinksAddon } from "xterm-addon-web-links";
+// import { WebglAddon } from "xterm-addon-webgl";
 import { FitAddon } from "xterm-addon-fit";
 import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
@@ -116,15 +117,15 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "xterm/css/xterm.css";
 
-const termTypeFace = "Hack";
-const termFallbackTypeFace = "monospace";
+const termTypeFaces = "PureNerdFont, Hack";
+const termFallbackTypeFace = "\"Cascadia Code\" , monospace";
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
-  'Remote font "' +
-  termTypeFace +
-  '" is unavailable, using "' +
+  'Remote font ' +
+  termTypeFaces +
+  ' is unavailable, using ' +
   termFallbackTypeFace +
-  '" instead until the remote font is loaded';
+  ' instead until the remote font is loaded';
 const termDefaultFontSize = 16;
 const termMinFontSize = 8;
 const termMaxFontSize = 36;
@@ -137,27 +138,23 @@ class Term {
     this.closed = false;
     this.fontSize = termDefaultFontSize;
     this.term = new Terminal({
+      allowProposedApi: true,
       allowTransparency: false,
       cursorBlink: true,
       cursorStyle: "block",
-      fontFamily: termTypeFace + ", " + termFallbackTypeFace,
+      fontFamily: termTypeFaces + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
+      theme: {
+        background: this.control.activeColor(),
+      },
     });
     this.fit = new FitAddon();
-
-    this.term.loadAddon(this.fit);
-    this.term.loadAddon(new WebLinksAddon());
-
-    this.term.setOption("theme", {
-      background: this.control.activeColor(),
-    });
 
     this.term.onData((data) => {
       if (this.closed) {
         return;
       }
-
       this.control.send(data);
     });
 
@@ -165,7 +162,6 @@ class Term {
       if (this.closed) {
         return;
       }
-
       this.control.sendBinary(data);
     });
 
@@ -173,75 +169,29 @@ class Term {
       if (this.closed) {
         return;
       }
-
       if (!this.control.echo()) {
         return;
       }
-
       const printable =
         !ev.domEvent.altKey &&
         !ev.domEvent.altGraphKey &&
         !ev.domEvent.ctrlKey &&
         !ev.domEvent.metaKey;
-
       switch (ev.domEvent.key) {
         case "Enter":
           ev.domEvent.preventDefault();
           this.writeStr("\r\n");
           break;
-
         case "Backspace":
           ev.domEvent.preventDefault();
           this.writeStr("\b \b");
           break;
-
         default:
           if (printable) {
             ev.domEvent.preventDefault();
             this.writeStr(ev.key);
           }
       }
-    });
-
-    this.term.attachCustomKeyEventHandler(async (ev) => {
-      if (this.closed) {
-        return true;
-      }
-
-      if (
-        ev.type == "keyup" &&
-        ((ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
-          (ev.key === "Insert" && ev.shiftKey))
-      ) {
-        try {
-          let text = await window.navigator.clipboard.readText();
-
-          this.writeEchoStr(text);
-        } catch (e) {
-          alert(
-            "Unable to paste: " +
-              e +
-              ". Please try again without using the Control+Shift+V / " +
-              "Shift+Insert hot key"
-          );
-        }
-        return false;
-      }
-
-      if (
-        ev.type == "keyup" &&
-        ((ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
-          (ev.key === "Insert" && ev.ctrlKey))
-      ) {
-        try {
-          window.navigator.clipboard.writeText(this.term.getSelection());
-        } catch (e) {
-          alert("Unable to copy: " + e);
-        }
-        return false;
-      }
-
-      return true;
     });
 
     let resizeDelay = null,
@@ -252,30 +202,23 @@ class Term {
       if (this.closed) {
         return;
       }
-
       if (dim.cols === oldCols && dim.rows === oldRows) {
         return;
       }
-
       oldRows = dim.rows;
       oldCols = dim.cols;
-
       if (resizeDelay !== null) {
         clearTimeout(resizeDelay);
         resizeDelay = null;
       }
-
       resizeDelay = setTimeout(() => {
         resizeDelay = null;
-
         if (!isNumber(dim.cols) || !isNumber(dim.rows)) {
           return;
         }
-
         if (!dim.cols || !dim.rows) {
           return;
         }
-
         this.control.resize({
           rows: dim.rows,
           cols: dim.cols,
@@ -284,16 +227,26 @@ class Term {
     });
   }
 
-  init(root, callbacks) {
+  init(root) {
     if (this.closed) {
       return;
     }
-
     this.term.open(root);
-
-    this.term.textarea.addEventListener("focus", callbacks.focus);
-    this.term.textarea.addEventListener("blur", callbacks.blur);
-
+    this.term.loadAddon(this.fit);
+    this.term.loadAddon(new WebLinksAddon());
+    // TODO: Uncomment this after WebGL render is tested working and could
+    //       improve the performance, which is not yet the case during my last
+    //       revisit.
+    // if (() => {
+    //   try {
+    //     return !!window.WebGLRenderingContext && 
+    //       document.createElement('canvas').getContext('webgl');
+    //   } catch(e) {
+    //      return false;
+    //   }
+    // }) {
+    //   this.term.loadAddon(new WebglAddon());
+    // }
     this.refit();
   }
 
@@ -301,7 +254,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.textarea.dispatchEvent(event);
     } catch (e) {
@@ -313,13 +265,10 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.control.send(d);
-
     if (!this.control.echo()) {
       return;
     }
-
     this.writeStr(d);
   }
 
@@ -327,7 +276,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.write(d);
     } catch (e) {
@@ -339,7 +287,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.write(d);
     } catch (e) {
@@ -351,8 +298,7 @@ class Term {
     if (this.closed) {
       return;
     }
-
-    this.term.setOption("fontFamily", value);
+    this.term.options.fontFamily = value;
     this.refit();
   }
 
@@ -360,13 +306,11 @@ class Term {
     if (this.closed) {
       return;
     }
-
     if (this.fontSize >= termMaxFontSize) {
       return;
     }
-
     this.fontSize += 2;
-    this.term.setOption("fontSize", this.fontSize);
+    this.term.options.fontSize = this.fontSize;
     this.refit();
   }
 
@@ -374,13 +318,11 @@ class Term {
     if (this.closed) {
       return;
     }
-
     if (this.fontSize <= termMinFontSize) {
       return;
     }
-
     this.fontSize -= 2;
-    this.term.setOption("fontSize", this.fontSize);
+    this.term.options.fontSize = this.fontSize;
     this.refit();
   }
 
@@ -388,9 +330,9 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.focus();
+      this.refit();
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
@@ -400,7 +342,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.blur();
     } catch (e) {
@@ -412,7 +353,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.fit.fit();
     } catch (e) {
@@ -428,9 +368,7 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.closed = true;
-
     try {
       this.term.dispose();
     } catch (e) {
@@ -478,7 +416,7 @@ export default {
     return {
       screenKeys: consoleScreenKeys,
       term: new Term(this.control),
-      typeface: termTypeFace,
+      typefaces: termTypeFaces,
       runner: null,
       eventHandlers: {
         keydown: null,
@@ -518,25 +456,22 @@ export default {
     this.deinit();
   },
   methods: {
-    loadRemoteFont(typeface, timeout) {
-      return Promise.all([
-        new FontFaceObserver(typeface).load(null, timeout),
-        new FontFaceObserver(typeface, {
+    loadRemoteFont(typefaces, timeout) {
+      const tfs = typefaces.split(",");
+      let observers = [];
+      for (let v in tfs) {
+        observers.push(new FontFaceObserver(tfs[v].trim()).load(null, timeout))
+        observers.push(new FontFaceObserver(tfs[v].trim(), {
           weight: "bold",
-        }).load(null, timeout),
-      ]);
+        }).load(null, timeout))
+      }
+      return Promise.all(observers);
     },
-    async retryLoadRemoteFont(typeface, timeout, onSuccess) {
+    async retryLoadRemoteFont(typefaces, timeout, onSuccess) {
       const self = this;
-
       for (;;) {
-        if (self.term.destroyed()) {
-          return;
-        }
-
         try {
-          onSuccess(await self.loadRemoteFont(typeface, timeout));
-
+          onSuccess(await self.loadRemoteFont(typefaces, timeout));
           return;
         } catch (e) {
           // Retry
@@ -545,41 +480,29 @@ export default {
     },
     async openTerm(root, callbacks) {
       const self = this;
-
       try {
-        await self.loadRemoteFont(termTypeFace, termTypeFaceLoadTimeout);
-
+        await self.loadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout);
         if (self.term.destroyed()) {
           return;
         }
-
         root.innerHTML = "";
-
-        self.term.init(root, callbacks);
-
+        self.term.init(root);
         return;
       } catch (e) {
         // Ignore
       }
-
       if (self.term.destroyed()) {
         return;
       }
-
       root.innerHTML = "";
-
       callbacks.warn(termTypeFaceLoadError, false);
-
       self.term.setFont(termFallbackTypeFace);
-      self.term.init(root, callbacks);
-
-      self.retryLoadRemoteFont(termTypeFace, termTypeFaceLoadTimeout, () => {
+      self.term.init(root);
+      self.retryLoadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout, () => {
         if (self.term.destroyed()) {
           return;
         }
-
-        self.term.setFont(termTypeFace);
-
+        self.term.setFont(termTypeFaces);
         callbacks.warn(termTypeFaceLoadError, true);
       });
     },
@@ -589,22 +512,9 @@ export default {
     async init() {
       let self = this;
 
-      self.eventHandlers = {
-        keyup: (e) => self.localKeypress(e),
-        keydown: (e) => self.localKeypress(e),
-      };
-
       await self.openTerm(
         self.$el.getElementsByClassName("console-console")[0],
         {
-          focus(e) {
-            document.addEventListener("keyup", self.eventHandlers.keyup);
-            document.addEventListener("keydown", self.eventHandlers.keydown);
-          },
-          blur(e) {
-            document.removeEventListener("keyup", self.eventHandlers.keyup);
-            document.removeEventListener("keydown", self.eventHandlers.keydown);
-          },
           warn(msg, toDismiss) {
             self.$emit("warning", {
               text: msg,
@@ -634,13 +544,6 @@ export default {
     },
     fit() {
       this.term.refit();
-    },
-    localKeypress(e) {
-      if (!e.altKey && !e.shiftKey && !e.ctrlKey) {
-        return;
-      }
-
-      e.preventDefault();
     },
     activate() {
       this.term.focus();

@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -654,6 +654,22 @@ export const consoleScreenKeys = [
           repeat: false,
           shiftKey: false,
           which: 88,
+        },
+      ],
+      [
+        "Ctrl+T",
+        {
+          altKey: false,
+          charCode: 0,
+          code: "KeyT",
+          ctrlKey: true,
+          key: "t",
+          keyCode: 84,
+          location: 0,
+          metaKey: false,
+          repeat: false,
+          shiftKey: false,
+          which: 84,
         },
       ],
     ],

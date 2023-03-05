@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -106,7 +106,7 @@ func (f fileCfgPresets) concretize() ([]Preset, error) {
 
 		if err != nil {
 			return nil, fmt.Errorf(
-				"Unable to concretize Preset %d (titled \"%s\"): %s",
+				"unable to concretize Preset %d (titled \"%s\"): %s",
 				i+1, p.Title, err)
 		}
 

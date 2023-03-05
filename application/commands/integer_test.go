@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -65,7 +65,7 @@ func TestIntegerSingleByte1(t *testing.T) {
 	}
 
 	if mLen != 1 {
-		t.Error("Expecting the Integer to be marshalled into %d bytes, got "+
+		t.Errorf("Expecting the Integer to be marshalled into %d bytes, got "+
 			"%d instead", 1, mLen)
 
 		return
@@ -101,7 +101,7 @@ func TestIntegerSingleByte2(t *testing.T) {
 	}
 
 	if mLen != 1 {
-		t.Error("Expecting the Integer to be marshalled into %d bytes, got "+
+		t.Errorf("Expecting the Integer to be marshalled into %d bytes, got "+
 			"%d instead", 1, mLen)
 
 		return

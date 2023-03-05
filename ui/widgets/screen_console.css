@@ -1,7 +1,7 @@
 /*
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -20,18 +20,19 @@
 @charset "utf-8";
 
 @import "~hack-font/build/web/hack.css";
+@import "~@azurity/pure-nerd-font/pure-nerd-font.css";
 
 #connector-resource-preload-control-console {
-  font-family: Hack;
+  font-family: PureNerdFont, Hack;
 }
 #connector-resource-preload-control-console::after {
   content: " ";
-  font-family: Hack;
+  font-family: PureNerdFont, Hack;
   font-weight: bold;
 }
 #connector-resource-preload-control-console::before {
   content: " ";
-  font-family: Hack;
+  font-family: PureNerdFont, Hack;
   font-style: italic;
 }
 

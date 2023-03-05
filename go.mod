@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -20,8 +20,8 @@ module github.com/nirui/sshwifty
 go 1.13
 
 require (
-	github.com/gorilla/websocket v1.4.2
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	github.com/gorilla/websocket v1.5.0
+	golang.org/x/crypto v0.5.0
+	golang.org/x/net v0.5.0
+	golang.org/x/sys v0.4.0 // indirect
 )

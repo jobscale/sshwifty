@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -253,20 +253,32 @@ export default {
         this.$emit("navigate-to", "");
       });
     }
+
+    window.addEventListener("beforeunload", this.onBrowserClose);
   },
   beforeDestroy() {
+    window.removeEventListener("beforeunload", this.onBrowserClose);
+
     if (this.ticker === null) {
       clearInterval(this.ticker);
       this.ticker = null;
     }
   },
   methods: {
+    onBrowserClose(e) {
+      if (this.tab.current < 0) {
+        return undefined;
+      }
+      const msg = "Some tabs are still open, are you sure you want to exit?";
+      (e || window.event).returnValue = msg;
+      return msg;
+    },
     tick() {
       let now = new Date();
 
       this.socket.update(now, this);
     },
-    closeAllWindow() {
+    closeAllWindow(e) {
       for (let i in this.windows) {
         this.windows[i] = false;
       }

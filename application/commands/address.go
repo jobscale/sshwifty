@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -25,25 +25,25 @@ import (
 	"github.com/nirui/sshwifty/application/rw"
 )
 
-//Errors
+// Errors
 var (
 	ErrAddressParseBufferTooSmallForHeader = errors.New(
-		"Buffer space was too small to parse the address header")
+		"buffer space was too small to parse the address header")
 
 	ErrAddressParseBufferTooSmallForIPv4 = errors.New(
-		"Buffer space was too small to parse the IPv4 address")
+		"buffer space was too small to parse the IPv4 address")
 
 	ErrAddressParseBufferTooSmallForIPv6 = errors.New(
-		"Buffer space was too small to parse the IPv6 address")
+		"buffer space was too small to parse the IPv6 address")
 
 	ErrAddressParseBufferTooSmallForHostName = errors.New(
-		"Buffer space was too small to parse the hostname address")
+		"buffer space was too small to parse the hostname address")
 
 	ErrAddressMarshalBufferTooSmall = errors.New(
-		"Buffer space was too small to marshal the address")
+		"buffer space was too small to marshal the address")
 
 	ErrAddressInvalidAddressType = errors.New(
-		"Invalid address type")
+		"invalid address type")
 )
 
 // AddressType Type of the address
@@ -78,8 +78,7 @@ type Address struct {
 //   - IPv4Addr:        01 IPv4 Address, carries 4 bytes of Address data
 //   - IPv6Addr:        10 IPv6 Address, carries 16 bytes Address data
 //   - HostnameAddr:    11 Host name string, length of Address data is indicated
-//                         by the remainer of the byte (11-- ----). maxlen = 63
-//
+//     by the remainer of the byte (11-- ----). maxlen = 63
 func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	if len(buf) < 3 {
 		return Address{}, ErrAddressParseBufferTooSmallForHeader

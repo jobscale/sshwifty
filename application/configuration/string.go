@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -51,7 +51,7 @@ func (s String) Parse() (string, error) {
 		f, e := os.Open(fPath)
 
 		if e != nil {
-			return "", fmt.Errorf("Unable to open %s: %s", fPath, e)
+			return "", fmt.Errorf("unable to open %s: %s", fPath, e)
 		}
 
 		defer f.Close()
@@ -59,7 +59,7 @@ func (s String) Parse() (string, error) {
 		fData, e := ioutil.ReadAll(f)
 
 		if e != nil {
-			return "", fmt.Errorf("Unable to read from %s: %s", fPath, e)
+			return "", fmt.Errorf("unable to read from %s: %s", fPath, e)
 		}
 
 		return string(fData), nil
@@ -74,6 +74,6 @@ func (s String) Parse() (string, error) {
 
 	default:
 		return "", fmt.Errorf(
-			"Scheme \"%s\" was unsupported", ss[:sSchemeLeadIdx])
+			"scheme \"%s\" was unsupported", ss[:sSchemeLeadIdx])
 	}
 }

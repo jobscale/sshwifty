@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -31,13 +31,13 @@ import (
 // Errors
 var (
 	ErrHandlerUnknownHeaderType = errors.New(
-		"Unknown command header type")
+		"unknown command header type")
 
 	ErrHandlerControlMessageTooLong = errors.New(
-		"Control message was too long")
+		"control message was too long")
 
 	ErrHandlerInvalidControlMessage = errors.New(
-		"Invalid control message")
+		"invalid control message")
 )
 
 // HandlerCancelSignal signals the cancel of the entire handling proccess
@@ -80,7 +80,7 @@ func (h *handlerSender) signal(hd Header, d []byte, buf []byte) error {
 	dLen := len(d)
 
 	if bufLen < dLen+1 {
-		panic(fmt.Sprintln("Sending signal %s:%d requires %d bytes of buffer, "+
+		panic(fmt.Sprintf("Sending signal %s:%d requires %d bytes of buffer, "+
 			"but only %d bytes is available", hd, d, dLen+1, bufLen))
 	}
 
@@ -111,11 +111,6 @@ type streamHandlerSender struct {
 	*handlerSender
 
 	sendDelay time.Duration
-}
-
-// signal sends handler signal
-func (h streamHandlerSender) signal(hd Header, d []byte, buf []byte) error {
-	return h.handlerSender.signal(hd, d, buf)
 }
 
 // Write sends data

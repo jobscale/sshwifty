@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -42,7 +42,7 @@ func (d dumpWrite) Write(b []byte) (int, error) {
 // Errors
 var (
 	ErrInvalidIPAddress = errors.New(
-		"Invalid IP address")
+		"invalid IP address")
 )
 
 // HandlerBuilder builds a HTTP handler
@@ -60,7 +60,6 @@ type CloseCallback func(error)
 // Server represents a server
 type Server struct {
 	logger       log.Logger
-	cfg          configuration.Common
 	shutdownWait *sync.WaitGroup
 }
 
@@ -96,7 +95,7 @@ func (s Server) Serve(
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,
 			IdleTimeout:       ssCfg.ReadTimeout,
-			MaxHeaderBytes:    4096,
+			MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 			ErrorLog:          goLog.New(dumpWrite{}, "", 0),
 		},
 		shutdownWait: s.shutdownWait,
