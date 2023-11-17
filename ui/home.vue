@@ -85,23 +85,10 @@
           icon near the top left corner.
         </p>
 
-        <hr />
-
-        <p class="secondary">
-          Programmers in China launched an online campaign against
-          <a
-            href="https://en.wikipedia.org/wiki/996_working_hour_system"
-            target="blank"
-            >implicitly forced overtime work</a
-          >. Sshwifty wouldn't exist if its author must work such extreme
-          hours. If you're benefiting from hobbyist projects like this one,
-          please consider
-          <a
-            href="https://github.com/996icu/996.ICU/#what-can-i-do"
-            target="blank"
-            >supporting the action</a
-          >.
-        </p>
+        <div v-if="serverMessage.length > 0">
+          <hr />
+          <p class="secondary" v-html="serverMessage"></p>
+        </div>
       </div>
     </screens>
 
@@ -197,6 +184,10 @@ export default {
     commands: {
       type: Object,
       default: () => null,
+    },
+    serverMessage: {
+      type: String,
+      default: "",
     },
     presetData: {
       type: Object,
@@ -337,7 +328,7 @@ export default {
         () => {
           this.connector.busy = false;
           this.connector.acquired = false;
-        }
+        },
       );
     },
     connectNew(connector) {
@@ -355,7 +346,7 @@ export default {
             presets.emptyPreset(),
             null,
             false,
-            () => {}
+            () => {},
           ),
         };
 
@@ -377,7 +368,7 @@ export default {
             preset.preset,
             null,
             [],
-            () => {}
+            () => {},
           ),
         };
 
@@ -424,7 +415,7 @@ export default {
             known.keptSessions,
             () => {
               self.connector.knowns = self.connector.historyRec.all();
-            }
+            },
           ),
         };
 
@@ -474,7 +465,7 @@ export default {
               self.connector.knowns = self.connector.historyRec.all();
 
               done(n.data().success);
-            }
+            },
           ),
         };
 
@@ -538,7 +529,7 @@ export default {
           status: {
             closing: false,
           },
-        }) - 1
+        }) - 1,
       );
     },
     removeFromTab(index) {

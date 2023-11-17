@@ -49,6 +49,7 @@ const mainTemplate = `
   :connection="socket"
   :controls="controls"
   :commands="commands"
+  :server-message="serverMessage"
   :preset-data="presetData.presets"
   :restricted-to-presets="presetData.restricted"
   :view-port="viewPort"
@@ -76,7 +77,7 @@ function startApp(rootEl) {
 
   function getCurrentKeyMixer() {
     return Number(
-      Math.trunc(new Date().getTime() / socksKeyTimeTruncater)
+      Math.trunc(new Date().getTime() / socksKeyTimeTruncater),
     ).toString();
   }
 
@@ -84,8 +85,8 @@ function startApp(rootEl) {
     return new Uint8Array(
       await cipher.hmac512(
         stream.buildBufferFromString(privateKey),
-        stream.buildBufferFromString(getCurrentKeyMixer())
-      )
+        stream.buildBufferFromString(getCurrentKeyMixer()),
+      ),
     ).slice(0, 16);
   }
 
@@ -110,6 +111,7 @@ function startApp(rootEl) {
             : "",
         page: "loading",
         key: "",
+        serverMessage: "",
         presetData: {
           presets: new Presets([]),
           restricted: false,
@@ -164,7 +166,7 @@ function startApp(rootEl) {
         self.$nextTick(() => {
           self.viewPort.dim.renew(
             self.viewPortUpdaters.width,
-            self.viewPortUpdaters.height
+            self.viewPortUpdaters.height,
           );
         });
       };
@@ -200,7 +202,7 @@ function startApp(rootEl) {
         }
 
         return new Uint8Array(
-          await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime))
+          await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime)),
         ).slice(0, 32);
       },
       buildBackendSocketURLs() {
@@ -228,18 +230,22 @@ function startApp(rootEl) {
           this.buildBackendSocketURLs(),
           key,
           dialTimeout * 1000,
-          heartbeatInterval * 1000
+          heartbeatInterval * 1000,
         );
       },
       executeHomeApp(authResult, key) {
+        let authData = JSON.parse(authResult.data);
+        this.serverMessage = authData.server_message
+          ? authData.server_message
+          : "";
         this.presetData = {
-          presets: new Presets(JSON.parse(authResult.data)),
+          presets: new Presets(authData.presets ? authData.presets : []),
           restricted: authResult.onlyAllowPresetRemotes,
         };
         this.socket = this.buildSocket(
           key,
           authResult.timeout,
-          authResult.heartbeat
+          authResult.heartbeat,
         );
         this.page = "app";
       },
@@ -309,7 +315,7 @@ function startApp(rootEl) {
                     throw new Error(
                       "Unable to fetch key from remote, unexpected " +
                         "error code: " +
-                        result.result
+                        result.result,
                     );
                   }
 
@@ -352,12 +358,12 @@ function startApp(rootEl) {
                     throw new Error(
                       "Unable to fetch key from remote, unexpected " +
                         "error code: " +
-                        result.result
+                        result.result,
                     );
                   }
 
                   return await buildSocketKey(
-                    atob(result.key) + "+" + passphrase
+                    atob(result.key) + "+" + passphrase,
                   );
                 },
               });
