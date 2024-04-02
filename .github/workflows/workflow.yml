@@ -1,6 +1,8 @@
 name: Sshwifty-CI
 
 on:
+  # schedule:
+  # - cron: '52 17 * * 1'
   push:
     branches: [main, dev]
     tags: ["**-release"]
