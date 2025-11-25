@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -47,7 +47,7 @@ describe("Common", () => {
         expected: null,
       },
       {
-        sample: "a.ssh.vaguly.com",
+        sample: "a.ssh.nirui.org",
         expectingFailure: true,
         expected: null,
       },
@@ -159,7 +159,7 @@ describe("Common", () => {
         expected: null,
       },
       {
-        sample: "a.ssh.vaguly.com",
+        sample: "a.ssh.nirui.org",
         expectingFailure: true,
         expected: null,
       },
@@ -188,15 +188,15 @@ describe("Common", () => {
     let tests = [
       // Host name
       {
-        sample: "ssh.vaguly.com",
+        sample: "ssh.nirui.org",
         expectedType: "Hostname",
-        expectedAddr: common.strToUint8Array("ssh.vaguly.com"),
+        expectedAddr: common.strToUint8Array("ssh.nirui.org"),
         expectedPort: 22,
       },
       {
-        sample: "ssh.vaguly.com:22",
+        sample: "ssh.nirui.org:22",
         expectedType: "Hostname",
-        expectedAddr: common.strToUint8Array("ssh.vaguly.com"),
+        expectedAddr: common.strToUint8Array("ssh.nirui.org"),
         expectedPort: 22,
       },
 

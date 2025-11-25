@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -342,8 +342,10 @@ func (c *stream) reinit(
 	r *rw.FetchReader,
 	w streamHandlerSender,
 	l log.Logger,
+	hooks Hooks,
 	cc *Commands,
 	cfg Configuration,
+	bufferPool *BufferPool,
 	b []byte,
 ) error {
 	hd := streamInitialHeader{}
@@ -357,7 +359,7 @@ func (c *stream) reinit(
 	l = l.Context("Command (%d)", hd.command())
 
 	ccc, cccErr := cc.Run(
-		hd.command(), l, newStreamResponder(w, h), cfg)
+		hd.command(), l, hooks, newStreamResponder(w, h), cfg, bufferPool)
 
 	if cccErr != nil {
 		hd.set(0, uint16(StreamErrorCommandUndefined), false)

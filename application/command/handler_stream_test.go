@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -24,6 +24,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nirui/sshwifty/application/configuration"
 	"github.com/nirui/sshwifty/application/log"
 	"github.com/nirui/sshwifty/application/rw"
 )
@@ -57,26 +58,30 @@ func testDummyFetchChainGen(dd <-chan []byte) rw.FetchReaderFetcher {
 }
 
 type dummyStreamCommand struct {
-	lock      sync.Mutex
-	l         log.Logger
-	w         StreamResponder
-	downWait  sync.WaitGroup
-	echoData  []byte
-	echoTrans chan []byte
+	lock       sync.Mutex
+	l          log.Logger
+	w          StreamResponder
+	downWait   sync.WaitGroup
+	echoData   []byte
+	echoTrans  chan []byte
+	bufferPool *BufferPool
 }
 
 func newDummyStreamCommand(
 	l log.Logger,
+	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) FSMMachine {
 	return &dummyStreamCommand{
-		lock:      sync.Mutex{},
-		l:         l,
-		w:         w,
-		downWait:  sync.WaitGroup{},
-		echoData:  []byte{},
-		echoTrans: make(chan []byte),
+		lock:       sync.Mutex{},
+		l:          l,
+		w:          w,
+		downWait:   sync.WaitGroup{},
+		echoData:   []byte{},
+		echoTrans:  make(chan []byte),
+		bufferPool: bufferPool,
 	}
 }
 
@@ -179,6 +184,7 @@ func TestHandlerHandleStream(t *testing.T) {
 	wBuffer := bytes.NewBuffer(make([]byte, 0, 1024))
 
 	lock := sync.Mutex{}
+	bufferPool := NewBufferPool(4096)
 	hhd := newHandler(
 		Configuration{},
 		&cmds,
@@ -187,7 +193,9 @@ func TestHandlerHandleStream(t *testing.T) {
 		&lock,
 		0,
 		0,
-		log.NewDitch())
+		log.NewDitch(),
+		NewHooks(configuration.HookSettings{}),
+		&bufferPool)
 
 	go func() {
 		stInitialHeader := streamInitialHeader{}

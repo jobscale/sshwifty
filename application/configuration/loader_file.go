@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -50,11 +50,9 @@ type fileCfgServer struct {
 
 func (f *fileCfgServer) build() Server {
 	iface := f.ListenInterface
-
 	if len(iface) <= 0 {
 		iface = "127.0.0.1"
 	}
-
 	return Server{
 		ListenInterface: iface,
 		ListenPort:      f.ListenPort,
@@ -77,24 +75,24 @@ func (f *fileCfgServer) build() Server {
 }
 
 type fileCfgPreset struct {
-	Title string
-	Type  string
-	Host  string
-	Meta  Meta
+	Title    string
+	Type     string
+	Host     string
+	TabColor string
+	Meta     Meta
 }
 
 func (f fileCfgPreset) concretize() (Preset, error) {
 	m, err := f.Meta.Concretize()
-
 	if err != nil {
 		return Preset{}, err
 	}
-
 	return Preset{
-		Title: f.Title,
-		Type:  strings.TrimSpace(f.Type),
-		Host:  f.Host,
-		Meta:  m,
+		Title:    f.Title,
+		Type:     strings.TrimSpace(f.Type),
+		Host:     f.Host,
+		TabColor: strings.TrimSpace(f.TabColor),
+		Meta:     m,
 	}, nil
 }
 
@@ -102,19 +100,15 @@ type fileCfgPresets []fileCfgPreset
 
 func (f fileCfgPresets) concretize() ([]Preset, error) {
 	ps := make([]Preset, 0, len(f))
-
 	for i, p := range f {
 		pp, err := p.concretize()
-
 		if err != nil {
 			return nil, fmt.Errorf(
 				"unable to concretize Preset %d (titled \"%s\"): %s",
 				i+1, p.Title, err)
 		}
-
 		ps = append(ps, pp)
 	}
-
 	return ps, nil
 }
 
@@ -137,6 +131,12 @@ type fileCfgCommon struct {
 	// Login pass for socks5 server, optional
 	Socks5Password string
 
+	// Hooks
+	Hooks Hooks
+
+	// HookTimeout execution timeout
+	HookTimeout int
+
 	// Servers
 	Servers []*fileCfgServer
 
@@ -155,6 +155,8 @@ func (f fileCfgCommon) build() (fileCfgCommon, error) {
 		Socks5:                 f.Socks5,
 		Socks5User:             f.Socks5User,
 		Socks5Password:         f.Socks5Password,
+		Hooks:                  f.Hooks,
+		HookTimeout:            durationAtLeast(f.HookTimeout, 1),
 		Servers:                f.Servers,
 		Presets:                f.Presets,
 		OnlyAllowPresetRemotes: f.OnlyAllowPresetRemotes,
@@ -163,36 +165,30 @@ func (f fileCfgCommon) build() (fileCfgCommon, error) {
 
 func loadFile(filePath string) (string, Configuration, error) {
 	f, fErr := os.Open(filePath)
-
 	if fErr != nil {
 		return fileTypeName, Configuration{}, fErr
 	}
-
 	defer f.Close()
 
 	cfg := fileCfgCommon{}
 
 	jDecoder := json.NewDecoder(f)
 	jDecodeErr := jDecoder.Decode(&cfg)
-
 	if jDecodeErr != nil {
 		return fileTypeName, Configuration{}, jDecodeErr
 	}
 
 	finalCfg, cfgErr := cfg.build()
-
 	if cfgErr != nil {
 		return fileTypeName, Configuration{}, cfgErr
 	}
 
 	servers := make([]Server, len(finalCfg.Servers))
-
 	for i := range servers {
 		servers[i] = finalCfg.Servers[i].build()
 	}
 
 	presets, err := finalCfg.Presets.concretize()
-
 	if err != nil {
 		return fileTypeName, Configuration{}, err
 	}
@@ -205,6 +201,8 @@ func loadFile(filePath string) (string, Configuration, error) {
 		Socks5:                 cfg.Socks5,
 		Socks5User:             cfg.Socks5User,
 		Socks5Password:         cfg.Socks5Password,
+		Hooks:                  cfg.Hooks,
+		HookTimeout:            time.Duration(cfg.HookTimeout) * time.Second,
 		Servers:                servers,
 		Presets:                presets,
 		OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
@@ -216,7 +214,6 @@ func File(customPath string) Loader {
 	return func(log log.Logger) (string, Configuration, error) {
 		if len(customPath) > 0 {
 			log.Info("Loading configuration from: %s", customPath)
-
 			return loadFile(customPath)
 		}
 
@@ -247,18 +244,14 @@ func File(customPath string) Loader {
 
 		for f := range fallbackFileSearchList {
 			fInfo, fErr := os.Stat(fallbackFileSearchList[f])
-
 			if fErr != nil {
 				continue
 			}
-
 			if fInfo.IsDir() {
 				continue
 			}
-
 			log.Info("Configuration file \"%s\" has been selected",
 				fallbackFileSearchList[f])
-
 			return loadFile(fallbackFileSearchList[f])
 		}
 

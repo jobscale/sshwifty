@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -23,6 +23,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nirui/sshwifty/application/configuration"
 	"github.com/nirui/sshwifty/application/log"
 	"github.com/nirui/sshwifty/application/rw"
 )
@@ -77,6 +78,7 @@ func TestHandlerHandleEcho(t *testing.T) {
 		'H', 'E', 'L', 'L', 'O', ' ', 'W', 'O', 'R', 'L', 'D', '3',
 	}
 	lock := sync.Mutex{}
+	bufferPool := NewBufferPool(4096)
 	handler := newHandler(
 		Configuration{},
 		nil,
@@ -86,6 +88,8 @@ func TestHandlerHandleEcho(t *testing.T) {
 		0,
 		0,
 		log.NewDitch(),
+		NewHooks(configuration.HookSettings{}),
+		&bufferPool,
 	)
 
 	hErr := handler.Handle()

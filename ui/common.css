@@ -1,7 +1,7 @@
 /*
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -326,6 +326,10 @@ body {
   position: absolute;
 }
 
+.window .window-title {
+  margin: 0;
+}
+
 .window.window1 {
   background: #a56;
   box-shadow: 0 0 5px #0006;
@@ -375,6 +379,9 @@ body {
 
 /* Form1 */
 .form1 {
+  text-wrap: wrap;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .form1 > fieldset,

@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -18,9 +18,9 @@
 package network
 
 import (
+	"context"
 	"errors"
 	"net"
-	"time"
 )
 
 // Errors
@@ -35,7 +35,6 @@ type AllowedHosts map[string]struct{}
 // Allowed returns whether or not given host is allowed
 func (a AllowedHosts) Allowed(host string) bool {
 	_, ok := a[host]
-
 	return ok
 }
 
@@ -47,14 +46,13 @@ type AllowedHost interface {
 // AccessControlDial creates an access controlled Dial
 func AccessControlDial(allowed AllowedHost, dial Dial) Dial {
 	return func(
+		ctx context.Context,
 		network string,
 		address string,
-		timeout time.Duration,
 	) (net.Conn, error) {
 		if !allowed.Allowed(address) {
 			return nil, ErrAccessControlDialTargetHostNotAllowed
 		}
-
-		return dial(network, address, timeout)
+		return dial(ctx, network, address)
 	}
 }

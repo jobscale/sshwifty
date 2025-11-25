@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -82,7 +82,7 @@ describe("Address", () => {
   it("Address HostName", async () => {
     let addr = new address.Address(
         address.HOSTNAME,
-        new Uint8Array(["v", "a", "g", "u", "l", "1", "2", "3"]),
+        new Uint8Array(['n', 'i', 'r', 'u', 'i', 'o', 'r', 'g', 1, 2, 3]),
         8080,
       ),
       buf = addr.buffer();

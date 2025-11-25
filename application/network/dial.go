@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -18,21 +18,25 @@
 package network
 
 import (
+	"context"
 	"net"
-	"time"
 )
 
 // Dial dial to remote machine
 type Dial func(
-	network string, address string, timeout time.Duration) (net.Conn, error)
+	ctx context.Context,
+	network string,
+	address string,
+) (net.Conn, error)
 
 // TCPDial build a TCP dialer
 func TCPDial() Dial {
 	return func(
+		ctx context.Context,
 		network string,
 		address string,
-		timeout time.Duration,
 	) (net.Conn, error) {
-		return net.DialTimeout(network, address, timeout)
+		dial := net.Dialer{}
+		return dial.DialContext(ctx, network, address)
 	}
 }

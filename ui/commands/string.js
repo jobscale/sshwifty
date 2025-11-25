@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -69,4 +69,21 @@ export class String {
 
     return buf;
   }
+}
+
+/**
+ * Truncates a string to the maximum length
+ *
+ * @param {string} str Source string
+ * @param {integer} maxLength Max length
+ * @param {string} exceed Text appends the string if it was truncated
+ *
+ * @returns {string} truncated String
+ *
+ */
+export function truncate(str, maxLength, exceed) {
+  if (str.length <= maxLength) {
+    return str;
+  }
+  return str.substring(0, maxLength) + exceed;
 }

@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -39,8 +39,10 @@ var (
 // Command represents a command handler machine builder
 type Command func(
 	l log.Logger,
+	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) FSMMachine
 
 // Builder builds a command
@@ -84,8 +86,10 @@ func (c *Commands) Register(
 func (c Commands) Run(
 	id byte,
 	l log.Logger,
+	hooks Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) (FSM, error) {
 	if id > MaxCommandID {
 		return FSM{}, ErrCommandRunUndefinedCommand
@@ -97,7 +101,7 @@ func (c Commands) Run(
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
 
-	return newFSM(cc.command(l, w, cfg)), nil
+	return newFSM(cc.command(l, hooks, w, cfg, bufferPool)), nil
 }
 
 // Reconfigure lets commands reset configuration

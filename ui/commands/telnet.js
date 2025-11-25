@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -26,14 +26,16 @@ import * as event from "./events.js";
 import Exception from "./exception.js";
 import * as history from "./history.js";
 import * as presets from "./presets.js";
+import * as strings from "./string.js";
 
 const COMMAND_ID = 0x00;
 
 const SERVER_INITIAL_ERROR_BAD_ADDRESS = 0x01;
 
 const SERVER_REMOTE_BAND = 0x00;
-const SERVER_DIAL_FAILED = 0x01;
-const SERVER_DIAL_CONNECTED = 0x02;
+const SERVER_HOOK_OUTPUT_BEFORE_CONNECTING = 0x01;
+const SERVER_DIAL_FAILED = 0x02;
+const SERVER_DIAL_CONNECTED = 0x03;
 
 const DEFAULT_PORT = 23;
 
@@ -56,6 +58,7 @@ class Telnet {
       [
         "initialization.failed",
         "initialized",
+        "hook.before_connected",
         "connect.failed",
         "connect.succeed",
         "@inband",
@@ -131,6 +134,12 @@ class Telnet {
         }
         break;
 
+      case SERVER_HOOK_OUTPUT_BEFORE_CONNECTING:
+        if (!this.connected) {
+          return this.events.fire("hook.before_connected", rd);
+        }
+        break;
+
       case SERVER_REMOTE_BAND:
         if (this.connected) {
           return this.events.fire("inband", rd);
@@ -187,7 +196,7 @@ const initialFieldDef = {
       "telnet.org</a> for public servers.",
     type: "text",
     value: "",
-    example: "telnet.vaguly.com:23",
+    example: "telnet.nirui.org:23",
     readonly: false,
     suggestions(input) {
       return [];
@@ -300,6 +309,17 @@ class Wizard {
     return command.done(false, null, title, message);
   }
 
+  stepHookOutputPrompt(title, msg) {
+    return command.wait(
+      title,
+      strings.truncate(
+        msg,
+        common.MAX_HOOK_OUTPUT_LEN,
+        common.HOOK_OUTPUT_STR_ELLIPSIS,
+      ),
+    );
+  }
+
   stepSuccessfulDone(data) {
     return command.done(
       true,
@@ -362,6 +382,14 @@ class Wizard {
       initialized(streamInitialHeader) {
         self.step.resolve(self.stepWaitForEstablishWait(configInput.host));
       },
+      async "hook.before_connected"(rd) {
+        const d = new TextDecoder("utf-8").decode(
+          await reader.readCompletely(rd),
+        );
+        self.step.resolve(
+          self.stepHookOutputPrompt("Waiting for server hook", d),
+        );
+      },
       "connect.succeed"(rd, commandHandler) {
         self.step.resolve(
           self.stepSuccessfulDone(
@@ -370,6 +398,7 @@ class Wizard {
               self.info,
               self.controls.build({
                 charset: parsedConfig.charset,
+                tabColor: configInput.tabColor,
                 send(data) {
                   return commandHandler.sendData(data);
                 },
@@ -421,6 +450,7 @@ class Wizard {
             {
               host: r.host,
               charset: r.encoding,
+              tabColor: self.preset ? self.preset.tabColor() : "",
             },
             self.session,
           );
@@ -515,6 +545,7 @@ class Executor extends Wizard {
         {
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
+          tabColor: self.config.tabColor ? self.config.tabColor : "",
         },
         self.session,
       );

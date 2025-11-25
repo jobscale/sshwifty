@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as buffer from "buffer/";
+import * as buffer from "buffer";
 import * as iconv from "iconv-lite";
 import Exception from "./exception.js";
 
@@ -56,6 +56,9 @@ const availableEncodings = [
   "utf-16be",
   "utf-16le",
 ];
+
+export const MAX_HOOK_OUTPUT_LEN = 128;
+export const HOOK_OUTPUT_STR_ELLIPSIS = "...";
 
 export const charsetPresets = (() => {
   let r = [];
@@ -319,8 +322,10 @@ export function strToBinary(d) {
   return new Uint8Array(buffer.Buffer.from(d, "binary").buffer);
 }
 
+const hostnameVerifier = new RegExp("^([0-9A-Za-z_.-]+)$");
+
 /**
- * Parse IPv6 address. ::ffff: notation is NOT supported
+ * Parse hostname
  *
  * @param {string} d IP address
  *
@@ -338,10 +343,24 @@ export function parseHostname(d) {
     throw new Exception("Invalid address");
   }
 
+  if (!hostnameVerifier.test(d)) {
+    throw new Exception("Invalid address");
+  }
+
   return strToUint8Array(d);
 }
 
-function parseIP(d) {
+/**
+ * Parse address
+ *
+ * @param {string} d address
+ *
+ * @returns {Uint8Array} Parsed Address
+ *
+ * @throws {Exception} When the address is invalid
+ *
+ */
+function parseAddr(d) {
   try {
     return {
       type: "IPv4",
@@ -372,7 +391,7 @@ export function splitHostPort(d, defPort) {
     ipv6hps = d.indexOf("[");
 
   if ((hps < 0 || hps != fhps) && ipv6hps < 0) {
-    let a = parseIP(d);
+    let a = parseAddr(d);
 
     return {
       type: a.type,
@@ -399,7 +418,7 @@ export function splitHostPort(d, defPort) {
   }
 
   let portNum = parseInt(port, 10),
-    a = parseIP(addr);
+    a = parseAddr(addr);
 
   return {
     type: a.type,

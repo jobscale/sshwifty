@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -54,6 +54,8 @@ func (c Commander) New(
 	receiveDelay time.Duration,
 	sendDelay time.Duration,
 	l log.Logger,
+	hooks Hooks,
+	bufferPool *BufferPool,
 ) (Handler, error) {
 	return newHandler(
 		cfg,
@@ -64,5 +66,7 @@ func (c Commander) New(
 		receiveDelay,
 		sendDelay,
 		l,
+		hooks,
+		bufferPool,
 	), nil
 }

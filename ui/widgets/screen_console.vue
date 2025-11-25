@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -42,7 +42,7 @@
     <div
       v-if="toolbar"
       class="console-toolbar"
-      :style="'background-color: ' + control.activeColor() + 'ee'"
+      :style="'background-color: ' + control.color() + 'ee'"
     >
       <h2 style="display: none">Tool bar</h2>
 
@@ -112,7 +112,7 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "@xterm/xterm/css/xterm.css";
 
-const termTypeFaces = "PureNerdFont, Hack";
+const termTypeFaces = "Hack, PureNerdFont";
 const termFallbackTypeFace = '"Cascadia Code" , monospace';
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
@@ -158,10 +158,10 @@ class Term {
       fontFamily: termTypeFaces + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
       letterSpacing: 1,
-      lineHeight: 1.5,
+      lineHeight: 1.3,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
-        background: this.control.activeColor(),
+        background: this.control.color(),
       },
     });
     this.fit = new FitAddon();
@@ -463,7 +463,10 @@ export default {
           onSuccess(await self.loadRemoteFont(typefaces, timeout));
           return;
         } catch (e) {
-          // Retry
+          // Wait and then retry
+          await new Promise(res => {
+            window.setTimeout(() => { res(); }, timeout);
+          });
         }
       }
     },
@@ -545,18 +548,14 @@ export default {
       if (this.runner !== null) {
         return;
       }
-
       let self = this;
-
       this.runner = (async () => {
         try {
           for (;;) {
             if (self.term.destroyed()) {
               break;
             }
-
             self.term.writeStr(await this.control.receive());
-
             self.$emit("updated");
           }
         } catch (e) {

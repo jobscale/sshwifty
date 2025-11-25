@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -29,10 +29,7 @@
           tabInfo.indicator.level === 'error',
         updated: tabInfo.indicator.updated && tab !== idx,
       }"
-      :style="
-        'background: ' +
-        (tab === idx ? tabInfo.control.activeColor() : tabInfo.control.color())
-      "
+      :style="'background: ' + tabInfo.control.color()"
       @click.self="switchTab(idx)"
     >
       <span class="title" :title="tabInfo.name" @click="switchTab(idx)">
